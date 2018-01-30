@@ -1,8 +1,8 @@
 import numpy as np
 from math import sqrt
 
-class Agent(object):
 
+class Agent(object):
     def __init__(self, csvParameters, ksi=0.5, dhor = 10, timehor=5, goalRadiusSq=1, maxF = 10):
         """ 
             Takes an input line from the csv file,  
@@ -26,6 +26,30 @@ class Agent(object):
         self.F = np.zeros(2) # the total force acting on the agent
         self.maxF = maxF # the maximum force that can be applied to the agent
 
+    # compute time to collide
+    def _ttc(self, agent):
+        r = self.radius + agent.radius
+        x = self.pos - agent.pos
+        c = np.dot(x, x) - r * r
+        if c < 0:   # agents are colliding
+            return 0
+        v = self.vel - agent.vel
+        a = np.dot(v, v)
+        b = np.dot(x, v)
+        if b > 0:   # agents are moving away
+            return np.inf
+        print a, b, c
+        discr = b * b - a * c
+        print discr
+        if discr <= 0:
+            print "discr less 0"
+            return np.inf
+        tau = c / (-b + sqrt(discr))
+        if tau < 0:
+            print "tau less 0"
+            return np.inf
+        return tau
+
     def computeForces(self, neighbors=[]):
         """ 
             Your code to compute the forces acting on the agent. 
@@ -33,7 +57,31 @@ class Agent(object):
         """       
         if not self.atGoal:
             self.F = np.zeros(2)
-            
+
+            f = np.zeros(2)
+            for neighbor in neighbors:
+                # goal force
+                fgoal = (self.gvel - self.vel) / self.ksi
+                print "goal force: ", fgoal
+                # avoidance force
+                tau = self._ttc(neighbor)
+                print "tau: ", tau
+                # if tau is np.inf:
+                #     favoid = np.zeros(2)
+                # dir = self.pos + self.vel * tau - neighbor.pos - neighbor.vel * tau
+                # if tau is 0:
+                #     tau = np.finfo('float64').eps
+                # dir_norm = np.linalg.norm(dir, ord=1)
+                # if dir_norm is 0:
+                #     dir_norm = np.finfo(dir.dtype).eps
+                # n = dir / dir_norm
+                # favoid = (max(self.timehor - tau, 0) / tau) * n
+                # print "avoidance force: ", favoid
+                favoid = np.zeros(2)
+
+                f = f + fgoal + favoid
+
+            self.F = f
 
     def update(self, dt):
         """ 
@@ -42,7 +90,7 @@ class Agent(object):
         """
         if not self.atGoal:
             self.vel += self.F*dt     # update the velocity
-            self.pos += self.vel*dt   #update the position
+            self.pos += self.vel*dt   # update the position
         
             # compute the goal velocity for the next time step. do not modify this
             self.gvel = self.goal - self.pos
@@ -50,7 +98,4 @@ class Agent(object):
             if distGoalSq < self.goalRadiusSq: 
                 self.atGoal = True  # goal has been reached
             else: 
-                self.gvel = self.gvel/sqrt(distGoalSq)*self.prefspeed  
-            
-            
-  
+                self.gvel = self.gvel/sqrt(distGoalSq)*self.prefspeed

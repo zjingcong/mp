@@ -3,6 +3,7 @@ from Tkinter import *
 import time
 import functools
 from agent import Agent
+import copy
 
 """
     Initalize parameters to run a simulation
@@ -21,7 +22,7 @@ reachedGoals = False # have all agents reached their goals
     Drawing parameters
 """
 pixelsize = 1024
-framedelay = 30
+framedelay = 500
 drawVels = True
 QUIT = False
 paused = False
@@ -29,6 +30,7 @@ step = False
 circles = []
 velLines = []
 gvLines = []
+
 
 def readScenario(fileName, scalex=1., scaley=1.):
     """
@@ -49,7 +51,7 @@ def readScenario(fileName, scalex=1., scaley=1.):
     x_max =	max(np.amax(np.array(positions)[:,0]), np.amax(np.array(goals)[:,0]))*scalex + 2.
     y_max =	max(np.amax(np.array(positions)[:,1]), np.amax(np.array(goals)[:,1]))*scaley + 2.
 
-    num = len(agents);
+    num = len(agents)
 
     return x_min, x_max, y_min, y_max 
 
@@ -69,7 +71,8 @@ def initWorld(canvas):
         circles.append(canvas.create_oval(0, 0, a.radius, a.radius, fill=colors[a.gid%4])) # color the disc of an agenr based on its group id
         velLines.append(canvas.create_line(0,0,10,10,fill="red"))
         gvLines.append(canvas.create_line(0,0,10,10,fill="green"))
-      
+
+
 def drawWorld():
     """
         draw the agents
@@ -88,6 +91,7 @@ def drawWorld():
                 canvas.itemconfigure(velLines[i], state="hidden")
                 canvas.itemconfigure(gvLines[i], state="hidden")
 
+
 def on_key_press(event):
     """
         keyboard events
@@ -104,6 +108,13 @@ def on_key_press(event):
     if event.keysym == "Escape":
         QUIT = True
 
+
+def get_neighbors(curr_index, all_agents):
+    neighbors = copy.deepcopy(all_agents)
+    del neighbors[curr_index]
+    return neighbors
+
+
 def updateSim(dt):
     """
         Update the simulation 
@@ -112,9 +123,12 @@ def updateSim(dt):
     global reachedGoals
    
     # compute the forces acting on each agent
+    curr_index = 0
     for agent in agents:
-        agent.computeForces(agents)
-    
+        neighbors = get_neighbors(curr_index, agents)
+        agent.computeForces(neighbors)
+        print "force: ", agent.F
+        curr_index = curr_index + 1
     
     reachedGoals = True    
     for agent in agents:
@@ -129,6 +143,8 @@ def drawFrame(dt):
     """
 
     global start_time,step,paused,ittr,globalTime
+
+    print "Current Iteration: ", ittr
 
     if reachedGoals or ittr > maxIttr or QUIT: #Simulation Loop
         print("%s itterations ran ... quitting"%ittr)
