@@ -38,15 +38,11 @@ class Agent(object):
         b = np.dot(x, v)
         if b > 0:   # agents are moving away
             return np.inf
-        print a, b, c
         discr = b * b - a * c
-        print discr
         if discr <= 0:
-            print "discr less 0"
             return np.inf
         tau = c / (-b + sqrt(discr))
         if tau < 0:
-            print "tau less 0"
             return np.inf
         return tau
 
@@ -54,34 +50,27 @@ class Agent(object):
         """ 
             Your code to compute the forces acting on the agent. 
             You probably need to pass here a list of all the agents in the simulation to determine the agent's nearest neighbors
-        """       
+        """
+        self.F = np.zeros(2)
+        # goal force
         if not self.atGoal:
-            self.F = np.zeros(2)
+            self.F = (self.gvel - self.vel) / self.ksi
 
-            f = np.zeros(2)
-            for neighbor in neighbors:
-                # goal force
-                fgoal = (self.gvel - self.vel) / self.ksi
-                print "goal force: ", fgoal
-                # avoidance force
-                tau = self._ttc(neighbor)
-                print "tau: ", tau
-                # if tau is np.inf:
-                #     favoid = np.zeros(2)
-                # dir = self.pos + self.vel * tau - neighbor.pos - neighbor.vel * tau
-                # if tau is 0:
-                #     tau = np.finfo('float64').eps
-                # dir_norm = np.linalg.norm(dir, ord=1)
-                # if dir_norm is 0:
-                #     dir_norm = np.finfo(dir.dtype).eps
-                # n = dir / dir_norm
-                # favoid = (max(self.timehor - tau, 0) / tau) * n
-                # print "avoidance force: ", favoid
+        # avoidance force
+        for neighbor in neighbors:
+            tau = self._ttc(neighbor)
+            if tau is np.inf:
                 favoid = np.zeros(2)
-
-                f = f + fgoal + favoid
-
-            self.F = f
+            else:
+                dir = self.pos + self.vel * tau - neighbor.pos - neighbor.vel * tau
+                if tau is 0:
+                    tau = np.finfo('float64').eps
+                dir_norm = np.linalg.norm(dir, ord=1)
+                if dir_norm is 0:
+                    dir_norm = np.finfo(dir.dtype).eps
+                n = dir / dir_norm
+                favoid = (max(self.timehor - tau, 0) / tau) * n
+            self.F = self.F + favoid
 
     def update(self, dt):
         """ 

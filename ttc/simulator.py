@@ -9,7 +9,7 @@ import copy
     Initalize parameters to run a simulation
 """
 dt = 0.05 # the simulation time step
-scenarioFile='3_agents.csv'
+scenarioFile='8_agents.csv'
 doExport = True # export the simulation?
 agents = [] # the simulated agents
 trajectories = [] # keep track of the agents' traces
@@ -22,7 +22,7 @@ reachedGoals = False # have all agents reached their goals
     Drawing parameters
 """
 pixelsize = 1024
-framedelay = 500
+framedelay = 100
 drawVels = True
 QUIT = False
 paused = False
@@ -41,7 +41,8 @@ def readScenario(fileName, scalex=1., scaley=1.):
     lines = fp.readlines()
     fp.close()
     for line in lines:
-        agents.append(Agent(line.split(','),0.5,1,10)) # create an agent and add it to the list
+        # create an agent and add it to the list (csvParms, ksi, dhor, timehor, goalRadiusSq, maxF)
+        agents.append(Agent(line.split(','), 0.5, 10, 10))
     
     # define the boundaries of the environment
     positions = [a.pos for a in agents]
@@ -109,9 +110,19 @@ def on_key_press(event):
         QUIT = True
 
 
-def get_neighbors(curr_index, all_agents):
-    neighbors = copy.deepcopy(all_agents)
-    del neighbors[curr_index]
+def get_neighbors(curr_agent):
+    # O(n_sqrt)
+    neighbors = list()
+    curr_pos = curr_agent.pos
+    for agent in agents:
+        if agent is not curr_agent:
+            pos = agent.pos
+            dist = np.linalg.norm((pos - curr_pos), ord=1)
+            if dist <= curr_agent.dhor:
+                neighbors.append(agent)
+
+    # print "neighbors num: ", len(neighbors)
+
     return neighbors
 
 
@@ -123,12 +134,10 @@ def updateSim(dt):
     global reachedGoals
    
     # compute the forces acting on each agent
-    curr_index = 0
     for agent in agents:
-        neighbors = get_neighbors(curr_index, agents)
+        neighbors = get_neighbors(agent)
         agent.computeForces(neighbors)
-        print "force: ", agent.F
-        curr_index = curr_index + 1
+        print "force: ", agent.F, np.linalg.norm(agent.F, ord=1)
     
     reachedGoals = True    
     for agent in agents:
@@ -144,7 +153,7 @@ def drawFrame(dt):
 
     global start_time,step,paused,ittr,globalTime
 
-    print "Current Iteration: ", ittr
+    # print "Current Iteration: ", ittr
 
     if reachedGoals or ittr > maxIttr or QUIT: #Simulation Loop
         print("%s itterations ran ... quitting"%ittr)
