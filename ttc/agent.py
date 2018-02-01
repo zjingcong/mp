@@ -51,26 +51,34 @@ class Agent(object):
             Your code to compute the forces acting on the agent. 
             You probably need to pass here a list of all the agents in the simulation to determine the agent's nearest neighbors
         """
-        self.F = np.zeros(2)
-        # goal force
         if not self.atGoal:
+            # goal force
             self.F = (self.gvel - self.vel) / self.ksi
 
-        # avoidance force
-        for neighbor in neighbors:
-            tau = self._ttc(neighbor)
-            if tau is np.inf:
-                favoid = np.zeros(2)
-            else:
-                dir = self.pos + self.vel * tau - neighbor.pos - neighbor.vel * tau
-                if tau is 0:
-                    tau = np.finfo('float64').eps
-                dir_norm = np.linalg.norm(dir, ord=1)
-                if dir_norm is 0:
-                    dir_norm = np.finfo(dir.dtype).eps
-                n = dir / dir_norm
-                favoid = (max(self.timehor - tau, 0) / tau) * n
-            self.F = self.F + favoid
+            # avoidance force
+            Favoid = np.zeros(2)
+            for neighbor in neighbors:
+                tau = self._ttc(neighbor)
+                if tau is np.inf:
+                    favoid = np.zeros(2)
+                else:
+                    dir = self.pos + self.vel * tau - neighbor.pos - neighbor.vel * tau
+                    if tau is 0:
+                        tau = np.finfo('float64').eps
+                    dir_norm = np.linalg.norm(dir, ord=1)
+                    if dir_norm is 0:
+                        dir_norm = np.finfo(dir.dtype).eps
+                    n = dir / dir_norm
+                    favoid = (max(self.timehor - tau, 0) / tau) * n
+                Favoid = Favoid + favoid
+            self.F = self.F + Favoid
+
+            # force refinement
+            F = np.linalg.norm(self.F, ord=1)
+            if F is 0:
+                F = np.finfo(self.F.dtype).eps
+            if F > self.maxF:
+                self.F = self.maxF * (self.F / F)
 
     def update(self, dt):
         """ 
