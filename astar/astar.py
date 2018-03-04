@@ -118,8 +118,8 @@ def compute_plan(grid, start, goal, cost, heuristic):
         for index, act in enumerate(action):
             # get next node
             # next node orientation
-            theta_next = theta_curr + act
-            # use  orientation to determine position
+            theta_next = (theta_curr + act) % 4
+            # use orientation to determine position
             x_next = x_curr + forward[theta_curr][0]
             y_next = y_curr + forward[theta_curr][1]
             act_name = action_name[index]
@@ -140,7 +140,7 @@ def compute_plan(grid, start, goal, cost, heuristic):
                     parent[theta_next][x_next][y_next] = (act_name, current)
 
     # get the path
-    plan[x_curr][y_curr] = 'T'  # reach the target
+    plan[x_curr][y_curr] = 'G'  # reach the target node
     while True:
         pre = parent[theta_curr][x_curr][y_curr]
         if pre[0] == 'S':
