@@ -106,7 +106,7 @@ def compute_policy(grid, start, goal, cost):
         plan[x_curr][y_curr] = act_name
         x_curr = x_curr + forward[theta_curr][0]
         y_curr = y_curr + forward[theta_curr][1]
-        theta_curr = theta_curr + action_dict[act_name]
+        theta_curr = (theta_curr + action_dict[act_name]) % 4
 
     # # ===============================================================================================================
     # # 2d dp
