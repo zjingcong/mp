@@ -9,7 +9,22 @@ public class TargetKeyboardController : MonoBehaviour {
 	void Update () {
         float moveHorizontal = Input.GetAxis("Horizontal");
         float moveVertical = Input.GetAxis("Vertical");
-        var move = new Vector3(moveHorizontal, 0, moveVertical);
-        transform.position += move * Time.deltaTime * speed;
+     //   var move = new Vector3(moveHorizontal, 0, moveVertical);
+      //  transform.position += move * Time.deltaTime * speed;
+		if (Input.GetKey(KeyCode.W)|| Input.GetKey(KeyCode.UpArrow)) {
+			transform.position += -transform.forward * Time.deltaTime * 10;
+		}
+		if (Input.GetKey(KeyCode.S)||Input.GetKey(KeyCode.DownArrow))
+		{
+			transform.position += transform.forward * Time.deltaTime * 10;
+		}
+		if (Input.GetKey(KeyCode.A)|| Input.GetKey(KeyCode.LeftArrow))
+		{
+			transform.Rotate(-transform.up*Time.deltaTime*45);
+		}
+		if (Input.GetKey(KeyCode.D)|| Input.GetKey(KeyCode.RightArrow))
+		{
+			transform.Rotate(transform.up * Time.deltaTime * 45);
+		}
     }
 }

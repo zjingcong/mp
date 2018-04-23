@@ -1,5 +1,6 @@
 ﻿// grid map gen ui: set heuristic function and build
 
+#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 
@@ -34,3 +35,4 @@ public class GridMapGenEditor : Editor {
         serializedObject.ApplyModifiedProperties();
     }
 }
+# endif

@@ -22,10 +22,13 @@ public class Planner : MonoBehaviour{
     [HideInInspector]
     public Vector2[] posPath;   // path in world 2D position
     private bool isFind = false;
-
     // cost
     private float costStraight = 1.0f;
     private float costDiagonal = Mathf.Sqrt(2.0f);
+    // path smooth
+    Vector2[] posSmooth;
+    public float smoothLearningRateAlpha = 0.01f;
+    public float smoothLearningRateBeta = 0.01f;
 
     // ds used in astar
     struct AstarVoxel
@@ -56,15 +59,18 @@ public class Planner : MonoBehaviour{
         // init currentPos and targetPos
         InitPos();
         // astar
-        Debug.Log("Current Heuristic Function ID: " + map.heuristic_id);
+        // Debug.Log("Current Heuristic Function ID: " + map.heuristic_id);
         InitMem();
         InitAstar();
-        Debug.Log("Astar Initialization.");
+        // Debug.Log("Astar Initialization.");
         isFind = Plan();
-        Debug.Log("Astar Planning Complete.");
+        // Debug.Log("Astar Planning Complete.");
         TraceBack();
         PathIndexToPos();
-        Debug.Log("Path Recording Complete.");
+        // Debug.Log("Path Recording Complete.");
+        // path smooth
+		SmoothPath();
+        // Debug.Log("Path Smoothing Complete.");
 
         // Debug.Log("Memory used before collection: " + System.GC.GetTotalMemory(false));
         System.GC.Collect();
@@ -77,8 +83,8 @@ public class Planner : MonoBehaviour{
     {
         targetIndex = map.PosToIndex(target2D);
         startIndex = map.PosToIndex(startPos2D);
-        Debug.Log("Start Index: " + startIndex);
-        Debug.Log("Target Index: " + targetIndex);
+        // Debug.Log("Start Index: " + startIndex);
+        // Debug.Log("Target Index: " + targetIndex);
     }
 
     void InitMem()
@@ -217,22 +223,64 @@ public class Planner : MonoBehaviour{
         return popElt;
     }
 
-    /// ========================================= Visualization =========================================================
+    /// ========================================= Smooth =========================================================
 
-    // visualization
-    private void OnDrawGizmos()
+    // smooth path: gradient descent
+    private void SmoothPath()
     {
-        if (!Application.isPlaying) return;
-        Gizmos.color = new Color(1.0f, 0.0f, 1.0f, 0.8f);
-        for (int i = 0; i < path.Length - 1; i++)
+        posSmooth = new Vector2[path.Length];
+        posSmooth = posPath;
+        for (int loop = 0; loop < 100; loop++)
         {
-            Vector2Int fromIndex, toIndex;
-            fromIndex = path[i];
-            toIndex = path[i + 1];
-            Vector2 from2D, to2D;
-            from2D = map.Index2PosCenter(fromIndex);
-            to2D = map.Index2PosCenter(toIndex);
-            Gizmos.DrawLine(new Vector3(from2D.x, map.worldHeight, from2D.y), new Vector3(to2D.x, map.worldHeight, to2D.y));
+            for (int i = 1; i < path.Length - 1; i++)
+            {
+                posSmooth[i].x = posSmooth[i].x - (smoothLearningRateAlpha * (posSmooth[i].x - posPath[i].x) + smoothLearningRateBeta * (posSmooth[i].x - posSmooth[i + 1].x));
+                posSmooth[i].y = posSmooth[i].y - (smoothLearningRateAlpha * (posSmooth[i].y - posPath[i].y) + smoothLearningRateBeta * (posSmooth[i].y - posSmooth[i + 1].y));
+            }
         }
+        posPath = posSmooth;
     }
+
+    // smooth path test
+    private void SmoothPath_Test()
+	{
+		posSmooth = new Vector2[path.Length];
+		posSmooth = posPath;
+		for (int i = 1; i < path.Length - 4; i++) {
+			posSmooth [i].x = (posPath [i].x + posPath [i+1].x + posPath [i+2].x + posPath [i+3].x) * 0.25f;
+			posSmooth [i].y = (posPath [i].y + posPath [i+1].y + posPath [i+2].y + posPath [i+3].y) * 0.25f;
+		}		
+		posPath = posSmooth;
+	}
+
+	/// ========================================= Visualization =========================================================
+
+	// visualization
+	private void OnDrawGizmos()
+	{
+		if (!Application.isPlaying) return;
+        // astar path
+		Gizmos.color = new Color(1.0f, 0.0f, 1.0f, 0.8f);
+		for (int i = 0; i < path.Length - 1; i++)
+		{
+			Vector2Int fromIndex, toIndex;
+			fromIndex = path[i];
+			toIndex = path[i + 1];
+			Vector2 from2D, to2D;
+			from2D = map.Index2PosCenter(fromIndex);
+			to2D = map.Index2PosCenter(toIndex);
+            Gizmos.DrawLine(new Vector3(from2D.x, map.worldHeight, from2D.y), new Vector3(to2D.x, map.worldHeight, to2D.y));
+		}
+        // smooth path
+		Gizmos.color = new Color(0.0f, 0.0f, 1.0f, 0.8f);
+		for (int i = 0; i < path.Length - 1; i++)
+		{
+			Vector2 from2D, to2D;
+			from2D.x = posPath[i].x;
+			from2D.y = posPath[i].y;
+			to2D.x = posPath[i+1].x;
+			to2D.y = posPath[i+1].y;
+			Gizmos.DrawLine(new Vector3(from2D.x, map.worldHeight, from2D.y), new Vector3(to2D.x, map.worldHeight, to2D.y));
+		}
+	}
 }

@@ -33,7 +33,7 @@ public class AgentController : MonoBehaviour {
         // replan when target changes position
         if (target.hasChanged)
         {
-            Debug.Log("Target or CurrentPos Change! Target: " + target.position + "Current Pos: " + target.position);
+            // Debug.Log("Target or CurrentPos Change! Target: " + target.position + "Current Pos: " + target.position);
             target.hasChanged = false;
             // replan the path
             Vector2 startVec2 = new Vector2(transform.position.x, transform.position.z);
@@ -49,21 +49,21 @@ public class AgentController : MonoBehaviour {
         // no valid path: stay still
         if (planner.posPath.Length <= 0)    { return; }
 
-        Debug.Log("Update!");
+        // Debug.Log("Update!");
         // init
         if (currentWayPoint == 0) { currentWayPoint++; }
         Vector2 currPos2D = new Vector2(transform.position.x, transform.position.z);
         Vector2 currWay2D = planner.posPath[currentWayPoint];
         if (Vector2.Distance(currPos2D, currWay2D) <= distanceTh)
         {
-            Debug.Log("Reach current way point!");
+            // Debug.Log("Reach current way point!");
             currentWayPoint++;
         }
         Vector2 dir2D = currWay2D - currPos2D;
         
-        Debug.Log("Index Path Length: " + planner.path.Length);
-        Debug.Log("Pos Path Length: " + planner.posPath.Length);
-        Debug.Log("currentWayPoint: " + currentWayPoint);
+        // Debug.Log("Index Path Length: " + planner.path.Length);
+        // Debug.Log("Pos Path Length: " + planner.posPath.Length);
+        // Debug.Log("currentWayPoint: " + currentWayPoint);
 
         Vector3 dir = new Vector3(dir2D.x, 0, dir2D.y);
         dir = dir.normalized;
@@ -91,6 +91,7 @@ public class AgentController : MonoBehaviour {
     private void OnDrawGizmos()
     {
         if (!Application.isPlaying) return;
+        if (!enabled) return;
 
         if (planner.posPath.Length <= 0) { return; }
 
