@@ -24,7 +24,9 @@ public class TestWebCam : MonoBehaviour {
         // convert WebCamTexture to Texture2D
         Texture2D tex = new Texture2D(webCamTexture.width, webCamTexture.height);
         tex.SetPixels(webCamTexture.GetPixels());
+        Debug.Log("tex size: " + tex.width + "x" + tex.height);
         tex.Apply();
+        Debug.Log("screen size: " + Screen.width + "x" + Screen.height);
 
     /*
         Mat mat = new Mat(webCamTexture.height, webCamTexture.width, MatType.CV_8UC4, tex.GetRawTextureData());

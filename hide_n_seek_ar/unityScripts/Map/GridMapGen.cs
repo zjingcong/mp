@@ -53,6 +53,8 @@ public class GridMapGen : MonoBehaviour {
         Debug.Log("Update GridMap Data." + "Current Heuristic Function ID: " + gridMap.heuristic_id);
     }
 
+    /// ========================================= Visualization =========================================================
+
     private void OnDrawGizmos()
     {
         // draw vertices

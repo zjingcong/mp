@@ -1,7 +1,7 @@
 ﻿using UnityEngine;  
 using System.Collections;  
 
-public class rotate : MonoBehaviour {  
+public class Rotate : MonoBehaviour {  
 
 	public Transform t1;    //开始位置  
 	public Transform t2;     //结束位置  

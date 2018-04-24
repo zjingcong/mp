@@ -7,10 +7,6 @@ public class TargetKeyboardController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        float moveHorizontal = Input.GetAxis("Horizontal");
-        float moveVertical = Input.GetAxis("Vertical");
-     //   var move = new Vector3(moveHorizontal, 0, moveVertical);
-      //  transform.position += move * Time.deltaTime * speed;
 		if (Input.GetKey(KeyCode.W)|| Input.GetKey(KeyCode.UpArrow)) {
 			transform.position += -transform.forward * Time.deltaTime * 10;
 		}

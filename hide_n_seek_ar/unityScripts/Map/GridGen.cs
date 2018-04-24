@@ -43,9 +43,14 @@ public class GridGen : MonoBehaviour {
         mesh.vertices = vertices;
     }
 
+    /// ========================================= Visualization =========================================================
+
     // visualization
     private void OnDrawGizmos()
     {
+        if (vertices == null) { return; }
+        if (vertices.Length <= 0) { return; }
+
         // draw lines
         Gizmos.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
         // draw horizontal lines
